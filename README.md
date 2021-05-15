@@ -12,7 +12,7 @@ different routes between two towns, and the shortest route between two towns.
 Given the particularities fo the _one way_ tracks, this problem is best modeled with a _directed_ graph with _weighed_ edges. 
 
 Objective is to provide APIs for:
-  1. computing distance along a given route (or path)
+  1. computing distance along a given route
   2. counting the number of possible routes between two towns
   3. shortest route between two towns
 
