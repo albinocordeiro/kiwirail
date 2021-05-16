@@ -1,97 +1,10 @@
 use clap::Clap;
 use color_eyre::eyre::Result;
-use color_eyre::eyre::eyre;
-use regex::Regex;
 use petgraph::graphmap::DiGraphMap;
 use kiwirail::input_parsing::*;
+use kiwirail::shortest_route::*;
 
 
-#[derive(Clap, Debug)]
-#[clap(version = "1.0", author = "Albino Cordeiro <albino@intuitionlogic.com>")]
-struct Options {
-    #[clap(subcommand)]
-    api: Api,
-    #[clap(short, long, required = true, 
-        about = "One edge per line, using the format [origin][destination][distance]. Example: AC5")]
-    edges_file: String,
-    #[clap(short, long, required = false, parse(from_occurrences))]
-    verbose: i32,
-}
-
-#[derive(Clap, Debug)]
-enum Api {
-    #[clap(about = "Will compute the cost (distance) of a given route.")]
-    RouteDistance(DistanceQuery),
-    #[clap(about = "Count the number of routes between two given towns. Accepts a bound on number of stops.")]
-    RouteCount(CountQuery),
-    #[clap(about = "Get the shortest route between two given towns.")]
-    ShortestRoute(DijkstraQuery),
-}
-
-#[derive(Clap, Debug)]
-struct DistanceQuery {
-    #[clap(short, long, required = true)]
-    route: String,
-}
-
-#[derive(Clap, Debug)]
-struct CountQuery {
-    #[clap(short, long, required = true, 
-        about = "Pair of town in the format [Origin][Destination]. Example: AB")]
-    town_pair: String,
-    #[clap(subcommand)]
-    stop_condition: StopCondition,
-}
-
-#[derive(Clap, Debug)]
-enum StopCondition {
-    #[clap(about = "Return routes with a maximum number of stops")]
-    Upto(StopParam),
-    #[clap(about = "Return routes with an exact number of stops")]
-    Exact(StopParam),
-}
-
-#[derive(Clap, Debug)]
-struct StopParam {
-    #[clap(required = true)]
-    stops: i32,
-}
-
-#[derive(Clap, Debug)]
-struct DijkstraQuery {
-    #[clap(short, long, required = true,
-        about = "Pair of town in the format [Origin][Destination]. Example: AB")]
-    town_pair: String,
-}
-
-#[derive(Clap, Debug)]
-struct GenerateParams {
-    #[clap(short, long, required = true, about = "Number of towns (less than 26)")]
-    number_of_towns: i32,
-}
-
-fn parse_node_pair(pair: &str) -> Result<(char, char)> {
-    let re = Regex::new(r"\b[A-Z]{2}\b")?;
-    if !re.is_match(pair) {
-        return Err(eyre!("The input {} is not a valid origin/destination pair. Usage example: --town-pair AB ."));
-    }
-    let mut chars = pair.chars();
-    if let (Some(origin), Some(destination)) = (chars.next(), chars.next()) {
-        return Ok((origin, destination));
-    }
-
-    Err(eyre!("Could not extract node pair from {}", pair))
-}
-
-fn parse_route(rstring: &str) -> Result<Vec<char>> {
-    let re = Regex::new(r"^\b[A-Z]{2,}\b$")?;
-    if !re.is_match(rstring) {
-        return Err(eyre!("The input {} is not a valid route", rstring));
-    }
-    let res: Vec<char> = rstring.chars().collect();
-
-    Ok(res)
-}
 fn main() -> Result<()> {
     color_eyre::install()?;
     println!(r#"
@@ -108,20 +21,32 @@ fn main() -> Result<()> {
             let (origin, destination) = parse_node_pair(&query.town_pair)?; 
             match query.stop_condition {
                 StopCondition::Upto(condition) => {
-                    println!("Count routes from {} to {} with a maximum of {} stops", origin, destination, condition.stops);
+                    println!("Count routes from {} to {} with a maximum of {} stops", &origin, &destination, &condition.stops);
                 },
                 StopCondition::Exact(condition) => {
-                    println!("Count routes from {} to {} with exactly {} stops", origin, destination, condition.stops);
+                    println!("Count routes from {} to {} with exactly {} stops", &origin, &destination, &condition.stops);
                 }
             };
         },
         Api::RouteDistance(query) => {
             let route: Vec<char> = parse_route(&query.route)?;
-            println!("Compute total route distance for route {:?}", route);
+            println!("Compute total route distance for route {:?}", &route);
         },
         Api::ShortestRoute(query) => {
             let (origin, destination) = parse_node_pair(&query.town_pair)?;
-            println!("Compute shortest route between {} and {}", origin, destination);
+            println!("Compute shortest route between {} and {}", &origin, &destination);
+            match dijkstra_shortest_route(&graph, origin, destination) {
+                Ok(route_option) => {
+                    match route_option {
+                        Some(route) => println!("{:?}", route),
+                        None => println!("NO SUCH ROUTE")
+                    } 
+                },
+                Err(r) => {
+                    return Err(r);
+                }
+            };
+
         },                               
     };
 
