@@ -13,8 +13,8 @@ Given the particularities fo the _one way_ tracks, this problem is best modeled 
 
 Objective is to provide APIs for:
   1. computing distance along a given route
-  2. counting the number of possible routes between two towns
-  3. shortest route between two towns
+  2. counting the number of possible routes between two towns with the option of three different flavours of contraints on the number of stops/distance traveled
+  3. The length of the shortest route between two towns
 
 Api 1. is basically a traversal along a given path on the graph while accounting edges distances (cost)
 Api 2. is, according to my initial intuition is a modifided BFS (Breath First Search) where different paths a counted
@@ -28,7 +28,7 @@ Api 3. is the standard application of _Dijkstra's Algorithm_
 
 ## Installation
 * run `cargo build`
-* Add executables folder to PATH env var: `export PATH=~/projects/kiwirail/targets/debug:$PATH`
+* Add executables folder to the PATH env var: `export PATH=~/projects/kiwirail/targets/debug:$PATH`
 
 ## Usage examples
 ```bash
@@ -36,16 +36,22 @@ Api 3. is the standard application of _Dijkstra's Algorithm_
 kiwirail_generator --num-nodes 10 
 
 # If you have graphviz installed the 'dot' executable will be available.
+# sudo apt install graphviz
 # The following will generate a graphical representation (png image) of the graph 
 # generated with kiwirail_generator
 dot -T png -O random_10.dot
 
 # Now you can use the kiwicli executable to run queries against the graph
 # Start by taking a look at the help menu
-kiwicli help
+kiwicli --help
 
 # You will also want to see the help menu for the different sub commands
-kiwicli  
+kiwicli shortest_route --edges-file random_10.kiwi shortest_route --help
+
+# The usage for shortest-route sub-command is: kiwicli --edges-file <edges-file> shortest-route --town-pair <town-pair>
+kiwicli --edges-file random_10.kiwi shortest-route --town-pair AF
+
+
 ```
 
 ## License

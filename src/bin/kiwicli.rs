@@ -3,6 +3,7 @@ use color_eyre::eyre::Result;
 use petgraph::graphmap::DiGraphMap;
 use kiwirail::input_parsing::*;
 use kiwirail::shortest_route::*;
+use kiwirail::route_distance::*;
 
 
 fn main() -> Result<()> {
@@ -25,28 +26,27 @@ fn main() -> Result<()> {
                 },
                 StopCondition::Exact(condition) => {
                     println!("Count routes from {} to {} with exactly {} stops", &origin, &destination, &condition.stops);
+                },
+                StopCondition::MaxDistance(condition) => {
+                    println!("Count routes from {} to {} with a distance less than {}", &origin, &destination, &condition.distance_limit);
                 }
             };
         },
         Api::RouteDistance(query) => {
             let route: Vec<char> = parse_route(&query.route)?;
             println!("Compute total route distance for route {:?}", &route);
+            match distance_along_route(&graph_map, &route) {
+                Some(total_distance) => println!("Total distance: {}", total_distance),
+                None => println!("NO SUCH ROUTE")
+            };
         },
         Api::ShortestRoute(query) => {
             let (origin, destination) = parse_node_pair(&query.town_pair)?;
-            println!("Compute shortest route between {} and {}", &origin, &destination);
-            match dijkstra_shortest_route(&graph, origin, destination) {
-                Ok(route_option) => {
-                    match route_option {
-                        Some(route) => println!("{:?}", route),
-                        None => println!("NO SUCH ROUTE")
-                    } 
-                },
-                Err(r) => {
-                    return Err(r);
-                }
+            println!("Compute the length of the shortest route between {} and {}", &origin, &destination);
+            match dijkstra_shortest_route_length(&graph_map, origin, destination) {
+                Some(distance) => println!("Found min distance: {}", distance),
+                None => println!("NO SUCH ROUTE")
             };
-
         },                               
     };
 

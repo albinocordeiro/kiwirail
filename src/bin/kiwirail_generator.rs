@@ -3,9 +3,6 @@ use std::fs::File;
 use std::io::Write;
 use color_eyre::eyre::Result;
 use clap::Clap;
-use kiwirail::input_parsing::*;
-use petgraph::graphmap::DiGraphMap;
-use petgraph::dot::{Dot, Config};
 
 
 #[derive(Clap, Debug)]
@@ -46,14 +43,6 @@ fn main () -> Result<()> {
     }
     file.flush()?;
     drop(file); // close file
-
-    let graph = from_kiwi_file(&file_name)?;
-    let dot_file_name = format!("random_{}.dot", num_nodes);
-    let mut f = File::create(&dot_file_name)?;
-    let output = format!("{}", Dot::with_config(&graph, &[Config::EdgeNoLabel]));
-    f.write_all(&output.as_bytes())?;
-    println!("Output written to {} and {}", file_name, dot_file_name);
-    println!("If you have graphviz installed you can generate a visual representation of the graph with: $> dot -T png -O {}", dot_file_name);
 
     Ok(())
 }

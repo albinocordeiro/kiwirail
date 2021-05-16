@@ -27,7 +27,7 @@ pub enum Api {
     RouteDistance(DistanceQuery),
     #[clap(about = "Count the number of routes between two given towns. Accepts a bound on number of stops.")]
     RouteCount(CountQuery),
-    #[clap(about = "Get the shortest route between two given towns.")]
+    #[clap(about = "Get the shortest distance between two given towns.")]
     ShortestRoute(DijkstraQuery),
 }
 
@@ -49,16 +49,24 @@ pub struct CountQuery {
 /// Two flavours of route count queries
 #[derive(Clap, Debug)]
 pub enum StopCondition {
-    #[clap(about = "Return routes with a maximum number of stops")]
+    #[clap(about = "Count routes with a maximum number of stops")]
     Upto(StopParam),
-    #[clap(about = "Return routes with an exact number of stops")]
+    #[clap(about = "Count routes with an exact number of stops")]
     Exact(StopParam),
+    #[clap(about = "Count routes shorter than a upper limit distance")]
+    MaxDistance(DistParam),
 }
 
 #[derive(Clap, Debug)]
 pub struct StopParam {
     #[clap(required = true)]
     pub stops: i32,
+}
+
+#[derive(Clap, Debug)]
+pub struct DistParam {
+    #[clap(required = true)]
+    pub distance_limit: i32,
 }
 
 #[derive(Clap, Debug)]
@@ -114,6 +122,7 @@ pub fn from_kiwi_file(file_name: &str) -> Result<DiGraphMap<char, i32>> {
 
 
 fn parse_edge(edge_string: &str) -> Result<(char, char, i32)> {
+
     lazy_static! {
         static ref EDGE_RE: Regex = Regex::new(r"\b([A-Z])([A-Z])(\d{1,})\b").unwrap();
     }
