@@ -27,12 +27,26 @@ Api 3. is the standard application of _Dijkstra's Algorithm_
 [![Coverage Status](https://coveralls.io/repos/github/albinocordeiro/kiwirail/badge.svg?branch=main)](https://coveralls.io/github/albinocordeiro/kiwirail?branch=main)
 
 ## Installation
+* run `cargo build`
+* Add executables folder to PATH env var: `export PATH=~/projects/kiwirail/targets/debug:$PATH`
 
-### Cargo
+## Usage examples
+```bash
+# Create the files random_10.kiwi and random_10.dot in the local folder
+kiwirail_generator --num-nodes 10 
 
-* Install the rust toolchain in order to have cargo installed by following
-  [this](https://www.rust-lang.org/tools/install) guide.
-* run `cargo install kiwirail`
+# If you have graphviz installed the 'dot' executable will be available.
+# The following will generate a graphical representation (png image) of the graph 
+# generated with kiwirail_generator
+dot -T png -O random_10.dot
+
+# Now you can use the kiwicli executable to run queries against the graph
+# Start by taking a look at the help menu
+kiwicli help
+
+# You will also want to see the help menu for the different sub commands
+kiwicli  
+```
 
 ## License
 

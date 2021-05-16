@@ -45,20 +45,16 @@ struct CountQuery {
 
 #[derive(Clap, Debug)]
 enum StopCondition {
-    Upto(UptoCondition),
-    Exact(ExactCondition),
+    #[clap(about = "Return routes with a maximum number of stops")]
+    Upto(StopParam),
+    #[clap(about = "Return routes with an exact number of stops")]
+    Exact(StopParam),
 }
 
 #[derive(Clap, Debug)]
-struct UptoCondition {
-    #[clap(about = "Maximum number of stops", required = true)]
-    k: i32,
-}
-
-#[derive(Clap, Debug)]
-struct ExactCondition {
-    #[clap(about = "Exact number of stops", required = true)]
-    k: i32,
+struct StopParam {
+    #[clap(required = true)]
+    stops: i32,
 }
 
 #[derive(Clap, Debug)]
@@ -99,38 +95,25 @@ fn parse_route(rstring: &str) -> Result<Vec<char>> {
 fn main() -> Result<()> {
     color_eyre::install()?;
     println!(r#"
-__________________________
-                          
-    /       ,            ,
----/-__-------------------
-  /(      /   | /| /   /  
-_/___\___/____|/_|/___/___
-                          
-                          
-___________________________
-    ____                   
-    /    )           ,    /
----/___ /-----__---------/-
-  /    |    /   )  /    /  
-_/_____|___(___(__/____/___
-                                                    
+                    _          
+    |/  o     o    |_) _  o  | 
+    |\  | \^/ |    | \(_| |  |                                              
 "#);
 
     let options = Options::parse();
     let graph_map: DiGraphMap<char, i32> = from_kiwi_file(&options.edges_file)?;
 
-
     match options.api {
         Api::RouteCount(query) => {
-            let (origin, destination): (char, char) = parse_node_pair(&query.town_pair)?; 
+            let (origin, destination) = parse_node_pair(&query.town_pair)?; 
             match query.stop_condition {
                 StopCondition::Upto(condition) => {
-                    println!("Count routes from {} to {} with a maximum of {} stops", origin, destination, condition.k)
+                    println!("Count routes from {} to {} with a maximum of {} stops", origin, destination, condition.stops);
                 },
                 StopCondition::Exact(condition) => {
-                    println!("Count routes from {} to {} with a maximum of {} stops", origin, destination, condition.k)
+                    println!("Count routes from {} to {} with exactly {} stops", origin, destination, condition.stops);
                 }
-            }
+            };
         },
         Api::RouteDistance(query) => {
             let route: Vec<char> = parse_route(&query.route)?;

@@ -28,10 +28,6 @@ fn parse_edge(edge_string: &str) -> Result<(char, char, i32)> {
     lazy_static! {
         static ref EDGE_RE: Regex = Regex::new(r"\b([A-Z])([A-Z])(\d{1,})\b").unwrap();
     }
-    
-    // if EDGE_RE.is_match(edge_string) {
-    //     return Err(eyre!("Encountered an invalid edge in input file {}", edge_string));
-    // }
 
     let captures = EDGE_RE.captures_iter(edge_string);
     for cap in captures {

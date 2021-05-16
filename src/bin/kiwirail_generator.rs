@@ -28,7 +28,8 @@ fn main () -> Result<()> {
     }
 
     let file_name = format!("random_{}.kiwi", num_nodes);
-    let mut file = File::create(file_name)?;
+    
+    let mut file = File::create(&file_name)?;
     let chars: Vec<char> = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".chars().collect();
     let mut rng = thread_rng();
     for i in 0..num_nodes {
@@ -37,7 +38,6 @@ fn main () -> Result<()> {
                 let dice_throw = rng.gen_range(1..=100*num_nodes);
                 if dice_throw < 30 * num_nodes { // connect to 30% other nodes approximately
                     let mut nodepair = (vec![chars[i], chars[j]]).iter().collect::<String>();
-                    println!("({},{}) {}", i, j, nodepair);
                     nodepair.push_str(&dice_throw.to_string());
                     writeln!(&mut file, "{}", nodepair)?;    
                 }                
@@ -46,12 +46,14 @@ fn main () -> Result<()> {
     }
     file.flush()?;
     drop(file); // close file
-    let file_name = format!("random_{}.kiwi", num_nodes);
+
     let graph = from_kiwi_file(&file_name)?;
     let dot_file_name = format!("random_{}.dot", num_nodes);
-    let mut f = File::create(dot_file_name)?;
+    let mut f = File::create(&dot_file_name)?;
     let output = format!("{}", Dot::with_config(&graph, &[Config::EdgeNoLabel]));
     f.write_all(&output.as_bytes())?;
+    println!("Output written to {} and {}", file_name, dot_file_name);
+    println!("If you have graphviz installed you can generate a visual representation of the graph with: $> dot -T png -O {}", dot_file_name);
 
     Ok(())
 }
