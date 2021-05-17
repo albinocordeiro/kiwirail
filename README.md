@@ -1,4 +1,4 @@
-# kiwirail
+# Kiwi Rail
 ## Problem Statement
 The local commuter railroad services a number of towns in Kiwiland. Because of
 monetary concerns, all of the tracks are 'one-way.' That is, a route from Kaitaia to Invercargill
