@@ -1,35 +1,85 @@
 //! Count total number of distinct routes with three flavours of queries supported:
 //! exact number of stops, maximum number of stops and max distance.
 use petgraph::graphmap::DiGraphMap;
-use petgraph::algo::all_simple_paths;
-use crate::route_distance::*;
+use petgraph::prelude::*;
 
-/// Variation of the standard Depth First Search traversal where 
-pub fn count_routes_with_exact_num_stops(graph: &DiGraphMap<char, i32>, origin: char, 
-                                            destination: char, stops: i32) -> i32 {
-    let intermediate_stops = (stops - 1) as usize;
-    let paths_collection: Vec<Vec<char>> = all_simple_paths(graph, origin, destination, intermediate_stops, Some(intermediate_stops)).collect();
-    
-    paths_collection.len() as i32
+
+fn exact_stops_dfs(g: &DiGraphMap<char, i32>, curr_node: char, target_node: char, stops: i32, count: &mut i32) {
+    if stops == 0 {
+        if curr_node == target_node {
+            *count += 1;
+        } 
+        return;
+    }
+
+    let neighbours = g.neighbors_directed(curr_node, Direction::Outgoing);
+    for node in neighbours {
+        exact_stops_dfs(g, node, target_node, stops - 1, count);
+    }
+
 }
 
-pub fn count_routes_with_max_stops (graph: &DiGraphMap<char, i32>, origin: char, destination: char, stops: i32) -> i32 {
-    let paths_collection: Vec<Vec<char>> = all_simple_paths(graph, origin, destination, 0, Some(stops as usize)).collect();
+/// Variation of the standard Depth First Search traversal where we tolerate revisiting nodes and the 
+/// criteria for identifying the end of a path is the length of the path in terms of edges traversed
+pub fn count_routes_with_exact_num_stops(graph: &DiGraphMap<char, i32>, origin: char, 
+                                            destination: char, stops: i32) -> i32 {
 
-    paths_collection.len() as i32
+    let mut path_count: i32 = 0;
+    exact_stops_dfs(graph, origin, destination, stops, &mut path_count);
+    
+    path_count
+}
+
+
+fn max_stops_dfs(g: &DiGraphMap<char, i32>, curr_node: char, target_node: char, stops: i32, count: &mut i32) {
+    if curr_node == target_node {
+        *count += 1;
+    }
+    if stops == 0 {
+        return;
+    }
+
+    let neighbours = g.neighbors_directed(curr_node, Direction::Outgoing);
+    for node in neighbours {
+        exact_stops_dfs(g, node, target_node, stops - 1, count);
+    }
+}
+
+/// Variation of the standard Depth First Search traversal where we tolerate revisiting nodes and the 
+/// criteria for incrementing the count is when we reach the target node, however, the path only ends when
+/// maximum number of stops is reached
+pub fn count_routes_with_max_stops (graph: &DiGraphMap<char, i32>, origin: char, destination: char, stops: i32) -> i32 {
+    let mut path_count: i32 = 0;
+
+    max_stops_dfs(graph, origin, destination, stops, &mut path_count);
+    
+    path_count
+}
+
+fn max_distance_dfs(g: &DiGraphMap<char, i32>, curr_node: char, target_node: char, distance: i32, count: &mut i32) {
+    
+    let neighbours = g.neighbors_directed(curr_node, Direction::Outgoing);
+    for node in neighbours {
+        
+        match g.edge_weight(curr_node, node) {
+            Some(edge_dist) => {
+                if distance - *edge_dist > 0 {
+                    if node == target_node {
+                        *count += 1;
+                    }
+                    max_distance_dfs(g, node, target_node, distance - *edge_dist, count);
+                }
+            },
+            None => panic!("This should never happen!"),
+        };
+
+    }
 }
 
 pub fn count_routes_with_max_total_distance(graph: &DiGraphMap<char, i32>, origin: char, destination: char, distance_limit: i32) -> i32 {
-    let all_paths: Vec<Vec<char>> = all_simple_paths(graph, origin, destination, 0, None).collect();
-    let mut filtered_count: i32 = 0;
+    let mut path_count: i32 = 0;
 
-    for path in all_paths {
-        if let Some(path_distance) = distance_along_route(graph, &path) {
-            if path_distance < distance_limit {
-                filtered_count += 1;
-            }
-        }
-    }
-
-    filtered_count
+    max_distance_dfs(graph, origin, destination, distance_limit, &mut path_count);
+    
+    path_count
 }
