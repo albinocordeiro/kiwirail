@@ -51,7 +51,17 @@ kiwicli shortest_route --edges-file random_10.kiwi shortest_route --help
 # The usage for shortest-route sub-command is: kiwicli --edges-file <edges-file> shortest-route --town-pair <town-pair>
 kiwicli --edges-file random_10.kiwi shortest-route --town-pair AF
 
-
+# Bellow all the tests with the sample data:
+kiwicli -e sample.kiwi route-distance --route ABC
+kiwicli -e sample.kiwi route-distance --route AD
+kiwicli -e sample.kiwi route-distance --route ADC
+kiwicli -e sample.kiwi route-distance --route AEBCD
+kiwicli -e sample.kiwi route-distance --route AED
+kiwicli -e sample.kiwi route-count -t CC upto 3
+kiwicli -e sample.kiwi route-count -t AC exact 4
+kiwicli -e sample.kiwi shortest-route -t AC
+kiwicli -e sample.kiwi shortest-route -t BB
+kiwicli -e sample.kiwi route-count -t CC max-distance 30
 ```
 
 ## License
