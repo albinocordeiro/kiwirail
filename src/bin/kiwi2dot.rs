@@ -10,6 +10,7 @@ struct Options {
 }
 
 fn main() -> Result<()> {
+    color_eyre::install()?;
     let options = Options::parse();
     kiwi2dot(&options.file_path)?;
 

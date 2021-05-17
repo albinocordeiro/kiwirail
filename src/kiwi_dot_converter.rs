@@ -6,6 +6,7 @@ use std::io::Write;
 
 
 pub fn kiwi2dot(file_name: &str) -> Result<()> {
+    
     let graph = from_kiwi_file(file_name)?;
     let dot_file_name = format!("{}.dot", file_name);
     let mut f = File::create(&dot_file_name)?;

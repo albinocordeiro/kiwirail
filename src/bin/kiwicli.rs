@@ -4,6 +4,7 @@ use petgraph::graphmap::DiGraphMap;
 use kiwirail::input_parsing::*;
 use kiwirail::shortest_route::*;
 use kiwirail::route_distance::*;
+use kiwirail::route_count::*;
 
 
 fn main() -> Result<()> {
@@ -20,17 +21,22 @@ fn main() -> Result<()> {
     match options.api {
         Api::RouteCount(query) => {
             let (origin, destination) = parse_node_pair(&query.town_pair)?; 
-            match query.stop_condition {
+            let count: i32 = match query.stop_condition {
                 StopCondition::Upto(condition) => {
                     println!("Count routes from {} to {} with a maximum of {} stops", &origin, &destination, &condition.stops);
+                    count_routes_with_max_stops(&graph_map, origin, destination, condition.stops)
                 },
                 StopCondition::Exact(condition) => {
                     println!("Count routes from {} to {} with exactly {} stops", &origin, &destination, &condition.stops);
+                    count_routes_with_exact_num_stops(&graph_map, origin, destination, condition.stops)
                 },
                 StopCondition::MaxDistance(condition) => {
                     println!("Count routes from {} to {} with a distance less than {}", &origin, &destination, &condition.distance_limit);
+                    count_routes_with_max_total_distance(&graph_map, origin, destination, condition.distance_limit)
+                    
                 }
             };
+            println!("Number of routes matching criteria: {}", count);
         },
         Api::RouteDistance(query) => {
             let route: Vec<char> = parse_route(&query.route)?;

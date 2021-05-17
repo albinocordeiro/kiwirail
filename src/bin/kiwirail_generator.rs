@@ -15,6 +15,7 @@ struct Options {
 }
 
 fn main () -> Result<()> {
+    color_eyre::install()?;
     let options = Options::parse();
     let num_nodes: usize;
     if options.num_nodes > 26 {
